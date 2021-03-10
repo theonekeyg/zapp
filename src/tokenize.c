@@ -19,7 +19,7 @@ void tokenizer_init(struct tokenizer *tokenizer, char *buf) {
 
 static int punct_lookup(char *s) {
   static char *kw[] = {
-    "<=", ">=", "+", "-", "/", "*", "<", ">"
+    "<=", ">=", "!=", "==", "+", "-", "/", "*", "<", ">", "(", ")"
   };
   for (int i = 0; i < sizeof(kw)/sizeof(*kw); ++i) {
     if (!strncmp(kw[i], s, strlen(kw[i]))) {
@@ -70,63 +70,14 @@ struct token *tokenize(struct tokenizer *tokenizer) {
       continue;
     }
 
-    if (*tokenizer->cur == '(') {
-      struct token *tok = new_token(TOKEN_OPAREN, tokenizer->cur, 1,
+    int punct_len = punct_lookup(tokenizer->cur);
+    if (punct_len) {
+      struct token *tok = new_token(TOKEN_PUNCT, tokenizer->cur, punct_len,
                                     tokenizer->nline, tokenizer->nrow);
+      tokenizer->nrow += punct_len;
+      tokenizer->cur += punct_len;
       cur_token->next = tok;
       cur_token = cur_token->next;
-      ++tokenizer->cur;
-      ++tokenizer->nrow;
-      continue;
-    }
-
-    if (*tokenizer->cur == ')') {
-      struct token *tok = new_token(TOKEN_CPAREN, tokenizer->cur, 1,
-                                    tokenizer->nline, tokenizer->nrow);
-      cur_token->next = tok;
-      cur_token = cur_token->next;
-      ++tokenizer->cur;
-      ++tokenizer->nrow;
-      continue;
-    }
-
-    if (*tokenizer->cur == '*') {
-      struct token *tok = new_token(TOKEN_MUL, tokenizer->cur, 1,
-                                    tokenizer->nline, tokenizer->nrow);
-      cur_token->next = tok;
-      cur_token = cur_token->next;
-      ++tokenizer->cur;
-      ++tokenizer->nrow;
-      continue;
-    }
-
-    if (*tokenizer->cur == '/') {
-      struct token *tok = new_token(TOKEN_DIV, tokenizer->cur, 1,
-                                    tokenizer->nline, tokenizer->nrow);
-      cur_token->next = tok;
-      cur_token = cur_token->next;
-      ++tokenizer->cur;
-      ++tokenizer->nrow;
-      continue;
-    }
-
-    if (*tokenizer->cur == '+') {
-      struct token *tok = new_token(TOKEN_ADD, tokenizer->cur, 1,
-                                    tokenizer->nline, tokenizer->nrow);
-      cur_token->next = tok;
-      cur_token = cur_token->next;
-      ++tokenizer->cur;
-      ++tokenizer->nrow;
-      continue;
-    }
-
-    if (*tokenizer->cur == '-') {
-      struct token *tok = new_token(TOKEN_SUB, tokenizer->cur, 1,
-                                    tokenizer->nline, tokenizer->nrow);
-      cur_token->next = tok;
-      cur_token = cur_token->next;
-      ++tokenizer->cur;
-      ++tokenizer->nrow;
       continue;
     }
 

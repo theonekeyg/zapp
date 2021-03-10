@@ -12,13 +12,7 @@
 
 typedef enum {
   TOKEN_NUM,
-  TOKEN_ADD,
-  TOKEN_SUB,
-  TOKEN_MOD,
-  TOKEN_MUL,
-  TOKEN_DIV,
-  TOKEN_OPAREN,
-  TOKEN_CPAREN,
+  TOKEN_PUNCT,
   TOKEN_EOF
 } token_kind;
 
@@ -50,11 +44,15 @@ struct token *tok_consume(struct token *tok, const char *s);
  */
 
 typedef enum {
-  ND_ADD,
-  ND_SUB,
-  ND_MUL,
-  ND_DIV,
-  ND_NUM
+  ND_ADD, // +
+  ND_SUB, // -
+  ND_MUL, // *
+  ND_DIV, // /
+  ND_LT,  // <
+  ND_LTE, // <=
+  ND_EQ,  // ==
+  ND_NEQ, // !=
+  ND_NUM  // [1-9][0-9]*
 } node_kind;
 
 struct node {

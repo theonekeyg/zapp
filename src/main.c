@@ -5,6 +5,10 @@ const char *nodekind_to_str[] = {
   "ND_SUB",
   "ND_MUL",
   "ND_DIV",
+  "ND_LT",
+  "ND_LTE",
+  "ND_EQ",
+  "ND_NEQ",
   "ND_NUM"
 };
 
@@ -37,6 +41,18 @@ double eval_node(struct node *node) {
     case ND_DIV:
       rv = eval_node(node->lhs) / eval_node(node->rhs);
       break;
+    case ND_LT:
+      rv = eval_node(node->lhs) < eval_node(node->rhs);
+      break;
+    case ND_LTE:
+      rv = eval_node(node->lhs) <= eval_node(node->rhs);
+      break;
+    case ND_EQ:
+      rv = eval_node(node->lhs) == eval_node(node->rhs);
+      break;
+    case ND_NEQ:
+      rv = eval_node(node->lhs) != eval_node(node->rhs);
+      break;
     case ND_NUM:
       rv = node->num;
       break;
@@ -46,7 +62,7 @@ double eval_node(struct node *node) {
 
 int main() {
   struct tokenizer tokenizer;
-  tokenizer_init(&tokenizer, "2 / (2 + 2) * 2");
+  tokenizer_init(&tokenizer, "2 < 2 + 2 * 2");
   struct token *tok_list = tokenize(&tokenizer);
   for (struct token *tok = tok_list; tok->kind != TOKEN_EOF; tok = tok->next) {
     for (int i = 0; i < tok->len; ++i) {
