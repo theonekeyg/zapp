@@ -77,6 +77,7 @@ struct node {
 };
 
 struct node *expr(struct token **rest, struct token *tok);
+struct node *parse(struct token *tokens);
 
 /*
  * misc

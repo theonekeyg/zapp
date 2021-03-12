@@ -2,8 +2,8 @@
 #define _HASHMAP_H
 
 #include <stdint.h>
-#include <stdbool.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
 
 #define HASHTABLE_LOW 0.1

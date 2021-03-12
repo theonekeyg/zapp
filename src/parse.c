@@ -144,3 +144,14 @@ struct node *expr(struct token **rest, struct token *tok) {
   *rest = tok;
   return node;
 }
+
+struct node *parse(struct token *tokens) {
+  struct node head = {};
+  struct node *cur_node = &head;
+  while (tokens->kind != TOKEN_EOF) {
+    struct node *node = expr(&tokens, tokens);
+    cur_node->next = node;
+    cur_node = cur_node->next;
+  }
+  return head.next;
+}

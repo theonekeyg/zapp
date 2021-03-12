@@ -40,9 +40,7 @@ int main() {
     }
     printf(" at [%d;%d]\n", tok->nline, tok->nrow);
   }
-  struct node *program = expr(&tok_list, tok_list);
-  struct node *program1 = expr(&tok_list, tok_list);
-  program->next = program1;
+  struct node *program = parse(tok_list);
   for (; program; program = program->next) {
     print_bin_tree(program);
     printf("%lf\n", eval_node(program));
