@@ -2,13 +2,16 @@
 #define _HASHMAP_H
 
 #include <stdint.h>
+#include <stdbool.h>
+#include <stdlib.h>
+#include <string.h>
 
 #define HASHTABLE_LOW 0.1
 #define HASHTABLE_HIGH 0.5
 #define HASHTABLE_INITSIZE 2
 #define HASHTABLE_GROWTH_FACTOR 2
 
-typedef int (*hashtable_cmp_func)(const char *key1, const char *key2, size_t len);
+typedef bool (*hashtable_cmp_func)(const char *key1, const char *key2, size_t len);
 
 struct hashtable_entry {
   struct hashtable_entry *next;
@@ -28,6 +31,7 @@ struct hashtable {
 int htable_init(struct hashtable *ht, hashtable_cmp_func cmp_func);
 int htable_push(struct hashtable *ht, char *key, int len, void *value);
 void *htable_get(struct hashtable *ht, char *key, int len);
+bool htable_contains(struct hashtable *ht, char *key, int len);
 int htable_rehash(struct hashtable *h, int new_sizet);
 void htable_remove(struct hashtable *ht, char *key, int len);
 

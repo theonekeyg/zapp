@@ -19,7 +19,7 @@ void tokenizer_init(struct tokenizer *tokenizer, char *buf) {
 
 static int punct_lookup(char *s) {
   static char *kw[] = {
-    "<=", ">=", "!=", "==", "+", "-", "/", "*", "<", ">", "(", ")"
+    "<=", ">=", "!=", "==", "+", "-", "/", "*", "<", ">", "(", ")", "="
   };
   for (int i = 0; i < sizeof(kw)/sizeof(*kw); ++i) {
     if (!strncmp(kw[i], s, strlen(kw[i]))) {
@@ -46,9 +46,10 @@ struct token *tokenize(struct tokenizer *tokenizer) {
       continue;
     }
 
+    char *start = tokenizer->cur;
+
     // [1-9][0-9]*(.[0-9])*
     if (*tokenizer->cur >= '1' && *tokenizer->cur <= '9') {
-      char *start = tokenizer->cur;
       ++tokenizer->cur;
       ++tokenizer->nrow;
       while (*tokenizer->cur >= '0' && *tokenizer->cur <= '9') {
@@ -64,6 +65,20 @@ struct token *tokenize(struct tokenizer *tokenizer) {
       }
       */
       struct token *tok = new_token(TOKEN_NUM, start, tokenizer->cur - start,
+                                    tokenizer->nline, tokenizer->nrow);
+      cur_token->next = tok;
+      cur_token = cur_token->next;
+      continue;
+    }
+
+    // [a-zA-Z_][a-zA-Z0-9_]*
+    if (IS_CHAR(*tokenizer->cur) || *tokenizer->cur == '_') {
+      ++tokenizer->cur;
+      while (IS_CHAR(*tokenizer->cur) || *tokenizer->cur == '_' ||
+             (*tokenizer->cur >= '0' && *tokenizer->cur <= '9')) {
+        ++tokenizer->cur;
+      }
+      struct token *tok = new_token(TOKEN_IDENT, start, tokenizer->cur - start,
                                     tokenizer->nline, tokenizer->nrow);
       cur_token->next = tok;
       cur_token = cur_token->next;

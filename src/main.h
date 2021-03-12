@@ -6,6 +6,8 @@
 #include <string.h>
 #include <stdarg.h>
 
+#define IS_CHAR(c) (((unsigned int)c | (1 << 5)) - 'a' <= 'z' - 'a')
+
 /*
  * tokenize
  */
@@ -13,6 +15,7 @@
 typedef enum {
   TOKEN_NUM,
   TOKEN_PUNCT,
+  TOKEN_IDENT,
   TOKEN_EOF
 } token_kind;
 
@@ -44,26 +47,36 @@ struct token *tok_consume(struct token *tok, const char *s);
  */
 
 typedef enum {
-  ND_ADD, // +
-  ND_SUB, // -
-  ND_MUL, // *
-  ND_DIV, // /
-  ND_LT,  // <
-  ND_LTE, // <=
-  ND_EQ,  // ==
-  ND_NEQ, // !=
-  ND_NUM  // [1-9][0-9]*
+  ND_ADD,    // +
+  ND_SUB,    // -
+  ND_MUL,    // *
+  ND_DIV,    // /
+  ND_LT,     // <
+  ND_LTE,    // <=
+  ND_EQ,     // ==
+  ND_NEQ,    // !=
+  ND_ASSIGN, // =
+  ND_NUM,    // integer value
+  ND_VAR     // variable
 } node_kind;
+
+/* struct node; */
+
+struct var {
+  char *name;
+};
 
 struct node {
   node_kind kind;
+  struct node *next;
   struct node *lhs;
   struct node *rhs;
   struct token *tok;
-  int num; // integer value if `kind` is ND_NUM
+  int num;        // integer value if `kind` is ND_NUM
+  struct var var; // used if `kind` is ND_VAR
 };
 
-struct node *bin_op(struct token **rest, struct token *tok);
+struct node *expr(struct token **rest, struct token *tok);
 
 /*
  * misc
@@ -72,5 +85,12 @@ struct node *bin_op(struct token **rest, struct token *tok);
 _Noreturn void panic(const char *fmt, ...);
 
 _Noreturn void panic_tok(struct token *tok, const char *fmt, ...);
+
+/*
+ * ast
+ */
+
+double eval_node(struct node *node);
+
 
 #endif // _MAIN_H

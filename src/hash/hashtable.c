@@ -1,4 +1,3 @@
-#include <stdlib.h>
 #include "hashtable.h"
 
 static int hash_round_size(int size) {
@@ -9,8 +8,8 @@ static int hash_round_size(int size) {
   return i;
 }
 
-static int default_cmp_func(const char *key1, const char *key2, size_t len) {
-  return key1 == key2;
+static bool default_cmp_func(const char *key1, const char *key2, size_t len) {
+  return !strncmp(key1, key2, len);
 }
 
 static uint64_t fnv_hash(char *key, int n) {
@@ -87,6 +86,18 @@ void *htable_get(struct hashtable *ht, char *key, int len) {
     entry = entry->next;
   }
   return NULL;
+}
+
+bool htable_contains(struct hashtable *ht, char *key, int len) {
+  uint64_t hash = fnv_hash(key, len);
+  struct hashtable_entry *entry = ht->buckets[hash & (ht->nbuckets - 1)];
+  while (entry) {
+    if (hash == entry->hash_key && ht->cmp_func(key, entry->key, len)) {
+      return 1;
+    }
+    entry = entry->next;
+  }
+  return 0;
 }
 
 void htable_remove(struct hashtable *ht, char *key, int len) {

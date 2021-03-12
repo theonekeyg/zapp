@@ -1,4 +1,5 @@
 main
 obj/
+tests/*.exe
 *.o
 *.so
