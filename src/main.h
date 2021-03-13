@@ -56,11 +56,13 @@ typedef enum {
   ND_EQ,     // ==
   ND_NEQ,    // !=
   ND_ASSIGN, // =
+  ND_IF,     // if condition
+  // TODO: ND_PRINT is temporary solution, proper solution would be to
+  // replace ND_PRINT with regular fucntion calls
+  ND_PRINT,  // print following experssion to stdout
   ND_NUM,    // integer value
   ND_VAR     // variable
 } node_kind;
-
-/* struct node; */
 
 struct var {
   char *name;
@@ -74,6 +76,11 @@ struct node {
   struct token *tok;
   int num;        // integer value if `kind` is ND_NUM
   struct var var; // used if `kind` is ND_VAR
+
+  // These three are used for conditional jumps
+  struct node *cond;
+  struct node *then;
+  struct node *els;
 };
 
 struct node *expr(struct token **rest, struct token *tok);
@@ -92,6 +99,7 @@ _Noreturn void panic_tok(struct token *tok, const char *fmt, ...);
  */
 
 double eval_node(struct node *node);
+void execute_node(struct node *node);
 
 
 #endif // _MAIN_H

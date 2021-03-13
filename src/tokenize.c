@@ -49,7 +49,7 @@ struct token *tokenize(struct tokenizer *tokenizer) {
     char *start = tokenizer->cur;
 
     // [1-9][0-9]*(.[0-9])*
-    if (*tokenizer->cur >= '1' && *tokenizer->cur <= '9') {
+    if (*tokenizer->cur >= '0' && *tokenizer->cur <= '9') {
       ++tokenizer->cur;
       ++tokenizer->nrow;
       while (*tokenizer->cur >= '0' && *tokenizer->cur <= '9') {
@@ -74,9 +74,11 @@ struct token *tokenize(struct tokenizer *tokenizer) {
     // [a-zA-Z_][a-zA-Z0-9_]*
     if (IS_CHAR(*tokenizer->cur) || *tokenizer->cur == '_') {
       ++tokenizer->cur;
+      ++tokenizer->nrow;
       while (IS_CHAR(*tokenizer->cur) || *tokenizer->cur == '_' ||
              (*tokenizer->cur >= '0' && *tokenizer->cur <= '9')) {
         ++tokenizer->cur;
+        ++tokenizer->nrow;
       }
       struct token *tok = new_token(TOKEN_IDENT, start, tokenizer->cur - start,
                                     tokenizer->nline, tokenizer->nrow);

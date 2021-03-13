@@ -63,3 +63,23 @@ double eval_node(struct node *node) {
   }
   return _eval_node(node);
 }
+
+void execute_node(struct node *node) {
+  switch (node->kind) {
+    case ND_IF:
+      if (eval_node(node->cond)) {
+        execute_node(node->then);
+      } else {
+        if (node->els) {
+        execute_node(node->els);
+        }
+      }
+      break;
+    case ND_PRINT:
+      printf("%lf\n", eval_node(node->rhs));
+      break;
+    default:
+      eval_node(node);
+      break;
+  }
+}

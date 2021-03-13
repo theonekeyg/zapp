@@ -145,11 +145,36 @@ struct node *expr(struct token **rest, struct token *tok) {
   return node;
 }
 
+// stmt = "if" expr stmt ("else" stmt)?
+//      | "print" expr
+//      | expr
+struct node *stmt(struct token **rest, struct token *tok) {
+  if (tok_equals(tok, "if")) {
+    struct node *node = new_node(ND_IF, tok);
+    node->cond = expr(&tok, tok->next);
+    node->then = stmt(&tok, tok);
+    if (tok_equals(tok, "else")) {
+      node->els = stmt(&tok, tok->next);
+    }
+    *rest = tok;
+    return node;
+  }
+
+  if (tok_equals(tok, "print")) {
+    struct node *node = new_node(ND_PRINT, tok);
+    node->rhs = expr(&tok, tok->next);
+    *rest = tok;
+    return node;
+  }
+
+  return expr(rest, tok);
+}
+
 struct node *parse(struct token *tokens) {
   struct node head = {};
   struct node *cur_node = &head;
   while (tokens->kind != TOKEN_EOF) {
-    struct node *node = expr(&tokens, tokens);
+    struct node *node = stmt(&tokens, tokens);
     cur_node->next = node;
     cur_node = cur_node->next;
   }
