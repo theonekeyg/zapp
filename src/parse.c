@@ -1,5 +1,7 @@
 #include "main.h"
 
+struct node *stmt(struct token **rest, struct token *tok);
+
 static int custom_atoi(char *a) {
   int rv = 0;
   while (*a >= '0' && *a <= '9') {
@@ -22,9 +24,26 @@ struct node *new_binary(node_kind kind, struct node *lhs, struct node *rhs, stru
   return node;
 }
 
+struct node *new_num_literal(double num, struct token *tok) {
+  struct node *node = new_node(ND_NUM, tok);
+  node->num = num;
+  return node;
+}
+
+// ident = [a-zA-Z_][a-zA-Z0-9_]*
+struct node *ident(struct token **rest, struct token *tok) {
+  if (tok->kind == TOKEN_IDENT) {
+    struct node *node = new_node(ND_VAR, tok);
+    node->var.name = strndup(tok->start, tok->len);
+    *rest = tok->next;
+    return node;
+  }
+  panic_tok(tok, "Expected an identifier, but received something else");
+}
+
 // num = [1-9][0-9]*
 //     | '(' expr ')'
-//     | [a-zA-Z_][a-zA-Z0-9_]*
+//     | ident
 struct node *num(struct token **rest, struct token *tok) {
   if (tok_equals(tok, "(")) {
     tok = tok->next;
@@ -44,9 +63,8 @@ struct node *num(struct token **rest, struct token *tok) {
   }
 
   if (tok->kind == TOKEN_IDENT) {
-    struct node *node = new_node(ND_VAR, tok);
-    node->var.name = strndup(tok->start, tok->len);
-    *rest = tok->next;
+    struct node *node = ident(&tok, tok);
+    *rest = tok;
     return node;
   }
   panic_tok(tok, "Expected a number, but received something else");
@@ -135,7 +153,7 @@ struct node *expr(struct token **rest, struct token *tok) {
   struct node *node;
   if (tok->kind == TOKEN_IDENT && tok_equals(tok->next, "=")) {
     struct token *start = tok;
-    struct node *var = num(&tok, tok);
+    struct node *var = ident(&tok, tok);
     tok = tok->next;
     node = new_binary(ND_ASSIGN, var, expr(&tok, tok), start);
   } else {
@@ -145,16 +163,46 @@ struct node *expr(struct token **rest, struct token *tok) {
   return node;
 }
 
-// stmt = "if" expr stmt ("else" stmt)?
+// braces_body = "{" stmt* "}"
+struct node *braces_body(struct token **rest, struct token *tok) {
+  struct node *node = new_node(ND_BLOCK, tok);
+  struct token *start = tok;
+  tok = tok_consume(tok, "{");
+
+  struct node **cur_node = &node->body;
+  while (!(tok_equals(tok, "}") || tok->kind == TOKEN_EOF)) {
+    *cur_node = stmt(&tok, tok);
+    cur_node = &(*cur_node)->next;
+  }
+
+  /*
+  node->body = calloc(1, sizeof(*node->body));
+  struct node *cur_node = node->body;
+  while (!(tok_equals(tok, "}") || tok->kind == TOKEN_EOF)) {
+    cur_node->next = stmt(&tok, tok);
+    cur_node = cur_node->next;
+  }
+  */
+
+  if (tok->kind == TOKEN_EOF) {
+    panic_tok(start, "Unclosed braces body");
+  }
+
+  *rest = tok->next;
+  return node;
+}
+
+// stmt = "if" expr braces_body ("else" braces_body)?
 //      | "print" expr
+//      | "for" ident "in" num ".." num braces_body
 //      | expr
 struct node *stmt(struct token **rest, struct token *tok) {
   if (tok_equals(tok, "if")) {
     struct node *node = new_node(ND_IF, tok);
     node->cond = expr(&tok, tok->next);
-    node->then = stmt(&tok, tok);
+    node->then = braces_body(&tok, tok);
     if (tok_equals(tok, "else")) {
-      node->els = stmt(&tok, tok->next);
+      node->els = braces_body(&tok, tok->next);
     }
     *rest = tok;
     return node;
@@ -163,6 +211,25 @@ struct node *stmt(struct token **rest, struct token *tok) {
   if (tok_equals(tok, "print")) {
     struct node *node = new_node(ND_PRINT, tok);
     node->rhs = expr(&tok, tok->next);
+    *rest = tok;
+    return node;
+  }
+
+  if (tok_equals(tok, "for")) {
+    struct node *node = new_node(ND_FOR, tok);
+
+    struct node *var = ident(&tok, tok->next);
+    tok = tok_consume(tok, "in");
+    struct node *start = expr(&tok, tok);
+    tok = tok_consume(tok, "..");
+    struct node *end = expr(&tok, tok);
+
+    node->init = new_binary(ND_ASSIGN, var, start, var->tok);
+    node->cond = new_binary(ND_LT, var, end, tok);
+    node->inc = new_binary(ND_ASSIGN, var,
+        new_binary(ND_ADD, var, new_num_literal(1, NULL), tok),
+        tok);
+    node->body = braces_body(&tok, tok);
     *rest = tok;
     return node;
   }

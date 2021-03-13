@@ -10,8 +10,10 @@ const char *nodekind_to_str[] = {
   "ND_EQ",
   "ND_NEQ",
   "ND_ASSIGN",
+  "ND_FOR",
   "ND_IF",
   "ND_PRINT",
+  "ND_BLOCK",
   "ND_NUM",
   "ND_VAR"
 };
@@ -38,6 +40,19 @@ void _print_node_tree_recursive(struct node *node, int level) {
       printf("%*c%s\n", level * INDENT_LEN, ' ', nodekind_to_str[node->kind]);
       _print_node_tree_recursive(node->rhs, level + 1);
       break;
+    case ND_FOR:
+      printf("%*c%s\n", level * INDENT_LEN, ' ', nodekind_to_str[node->kind]);
+      _print_node_tree_recursive(node->init, level + 1);
+      _print_node_tree_recursive(node->cond, level + 1);
+      _print_node_tree_recursive(node->inc, level + 1);
+      _print_node_tree_recursive(node->body, level + 1);
+      break;
+    case ND_BLOCK:
+      node = node->body;
+      for (; node; node = node->next) {
+        _print_node_tree_recursive(node, level);
+      }
+      break;
     default:
       printf("%*c%s\n", level * INDENT_LEN, ' ', nodekind_to_str[node->kind]);
       _print_node_tree_recursive(node->lhs, level + 1);
@@ -51,17 +66,21 @@ void print_bin_tree(struct node *node) {
 
 int main() {
   struct tokenizer tokenizer;
-  tokenizer_init(&tokenizer, "a = 123\nprint a = 123");
+  tokenizer_init(&tokenizer, "for i in 0..10 { print i } print 999");
   struct token *tok_list = tokenize(&tokenizer);
+#ifdef DEBUG
   for (struct token *tok = tok_list; tok->kind != TOKEN_EOF; tok = tok->next) {
     for (int i = 0; i < tok->len; ++i) {
       putchar(tok->start[i]);
     }
     printf(" at [%d;%d]\n", tok->nline, tok->nrow);
   }
+#endif // DEBUG
   struct node *program = parse(tok_list);
   for (; program; program = program->next) {
+#ifdef DEBUG
     print_bin_tree(program);
+#endif // DEBUG
     execute_node(program);
     /* printf("%lf\n", eval_node(program)); */
   }

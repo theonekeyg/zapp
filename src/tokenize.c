@@ -19,7 +19,7 @@ void tokenizer_init(struct tokenizer *tokenizer, char *buf) {
 
 static int punct_lookup(char *s) {
   static char *kw[] = {
-    "<=", ">=", "!=", "==", "+", "-", "/", "*", "<", ">", "(", ")", "="
+    "<=", ">=", "!=", "==", "..", "+", "-", "/", "*", "<", ">", "(", ")", "{", "}", "="
   };
   for (int i = 0; i < sizeof(kw)/sizeof(*kw); ++i) {
     if (!strncmp(kw[i], s, strlen(kw[i]))) {

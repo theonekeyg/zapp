@@ -6,6 +6,13 @@
 #include <string.h>
 #include <stdarg.h>
 
+#undef DEBUG
+#define ENABLE_DEBUG 0
+
+#if(ENABLE_DEBUG == 1)
+#define DEBUG
+#endif // if(ENABLE_DEBUG == 1)
+
 #define IS_CHAR(c) (((unsigned int)c | (1 << 5)) - 'a' <= 'z' - 'a')
 
 /*
@@ -56,10 +63,12 @@ typedef enum {
   ND_EQ,     // ==
   ND_NEQ,    // !=
   ND_ASSIGN, // =
+  ND_FOR,    // for loop
   ND_IF,     // if condition
   // TODO: ND_PRINT is temporary solution, proper solution would be to
   // replace ND_PRINT with regular fucntion calls
   ND_PRINT,  // print following experssion to stdout
+  ND_BLOCK,  // sequence of statements (for instance, in `if` clause)
   ND_NUM,    // integer value
   ND_VAR     // variable
 } node_kind;
@@ -81,6 +90,13 @@ struct node {
   struct node *cond;
   struct node *then;
   struct node *els;
+
+  // For loops
+  struct node *init;
+  struct node *inc;
+
+  // Sequeunce of statements
+  struct node *body;
 };
 
 struct node *expr(struct token **rest, struct token *tok);
@@ -100,6 +116,5 @@ _Noreturn void panic_tok(struct token *tok, const char *fmt, ...);
 
 double eval_node(struct node *node);
 void execute_node(struct node *node);
-
 
 #endif // _MAIN_H

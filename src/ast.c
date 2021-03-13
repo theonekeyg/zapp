@@ -68,15 +68,32 @@ void execute_node(struct node *node) {
   switch (node->kind) {
     case ND_IF:
       if (eval_node(node->cond)) {
-        execute_node(node->then);
+        for (struct node *body = node->then->body; body; body = body->next) {
+          execute_node(body);
+        }
       } else {
         if (node->els) {
-        execute_node(node->els);
+          for (struct node *body = node->els->body; body; body = body->next) {
+            execute_node(body);
+          }
         }
       }
       break;
     case ND_PRINT:
       printf("%lf\n", eval_node(node->rhs));
+      break;
+    case ND_FOR:
+      if (node->init) {
+        execute_node(node->init);
+      }
+      while (eval_node(node->cond) != 0) {
+        for (struct node *body = node->body->body; body; body = body->next) {
+          execute_node(body);
+        }
+        if (node->inc) {
+          execute_node(node->inc);
+        }
+      }
       break;
     default:
       eval_node(node);
