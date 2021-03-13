@@ -1,6 +1,6 @@
 #include "main.h"
 
-const char *nodekind_to_str[] = {
+static const char *nodekind_to_str[] = {
   "ND_ADD",
   "ND_SUB",
   "ND_MUL",
@@ -60,13 +60,13 @@ void _print_node_tree_recursive(struct node *node, int level) {
   }
 }
 
-void print_bin_tree(struct node *node) {
+void print_node_tree(struct node *node) {
   _print_node_tree_recursive(node, 0);
 }
 
 int main() {
   struct tokenizer tokenizer;
-  tokenizer_init(&tokenizer, "for i in 0..10 { print i } print 999");
+  tokenizer_init(&tokenizer, "if 0 { a = 123 } else { a = 5 } print a");
   struct token *tok_list = tokenize(&tokenizer);
 #ifdef DEBUG
   for (struct token *tok = tok_list; tok->kind != TOKEN_EOF; tok = tok->next) {
@@ -79,10 +79,9 @@ int main() {
   struct node *program = parse(tok_list);
   for (; program; program = program->next) {
 #ifdef DEBUG
-    print_bin_tree(program);
+    print_node_tree(program);
 #endif // DEBUG
     execute_node(program);
-    /* printf("%lf\n", eval_node(program)); */
   }
   return 0;
 }

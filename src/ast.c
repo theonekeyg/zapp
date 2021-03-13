@@ -42,8 +42,6 @@ double _eval_node(struct node *node) {
       }
       break;
     case ND_ASSIGN: {
-      // TODO: if entry already exists in the htable, update it's value,
-      // instead of pushing new one
       double tmp = _eval_node(node->rhs);
       htable_push(
           &locals, node->lhs->var.name,

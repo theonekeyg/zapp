@@ -21,6 +21,18 @@ static uint64_t fnv_hash(char *key, int n) {
   return hash;
 }
 
+static struct hashtable_entry *htable_find(struct hashtable *ht, char *key,
+                                           int len, uint64_t hash) {
+  struct hashtable_entry *entry = ht->buckets[hash & (ht->nbuckets - 1)];
+  while (entry) {
+    if (hash == entry->hash_key && ht->cmp_func(key, entry->key, len)) {
+      return entry;
+    }
+    entry = entry->next;
+  }
+  return NULL;
+}
+
 int htable_init(struct hashtable *ht, hashtable_cmp_func cmp_func) {
   ht->buckets = calloc(1, HASHTABLE_INITSIZE * sizeof(struct hashtable_entry *));
   if (!ht->buckets) {
@@ -38,7 +50,13 @@ int htable_init(struct hashtable *ht, hashtable_cmp_func cmp_func) {
 
 int htable_push(struct hashtable *ht, char *key, int len, void *value) {
   uint64_t hash = fnv_hash(key, len);
-  struct hashtable_entry *new_entry = malloc(sizeof(struct hashtable_entry));
+  struct hashtable_entry *new_entry;
+  if (new_entry = htable_find(ht, key, len, hash)) {
+    new_entry->value = value;
+    return 0;
+  }
+
+  new_entry = malloc(sizeof(struct hashtable_entry));
   if (!new_entry) {
     return 1;
   }
@@ -78,12 +96,9 @@ int htable_rehash(struct hashtable *ht, int new_size) {
 
 void *htable_get(struct hashtable *ht, char *key, int len) {
   uint64_t hash = fnv_hash(key, len);
-  struct hashtable_entry *entry = ht->buckets[hash & (ht->nbuckets - 1)];
-  while (entry) {
-    if (hash == entry->hash_key && ht->cmp_func(key, entry->key, len)) {
-      return entry->value;
-    }
-    entry = entry->next;
+  struct hashtable_entry *entry;
+  if (entry = htable_find(ht, key, len, hash)) {
+    return entry->value;
   }
   return NULL;
 }
