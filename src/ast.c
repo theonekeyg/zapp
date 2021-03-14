@@ -33,6 +33,9 @@ double _eval_node(struct node *node) {
     case ND_NUM:
       rv = node->num;
       break;
+    case ND_NEG:
+      rv = -_eval_node(node->rhs);
+      break;
     case ND_VAR:
       if (htable_contains(&locals, node->var.name, strlen(node->var.name))) {
         void *value = htable_get(&locals, node->var.name, strlen(node->var.name));

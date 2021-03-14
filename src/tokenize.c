@@ -116,6 +116,12 @@ int tok_equals(struct token *tok, const char *s) {
   return !strncmp(tok->start, s, tok->len) && s[tok->len] == '\0';
 }
 
+void tok_skip(struct token **tok, const char *s) {
+  if (tok_equals(*tok, s)) {
+    *tok = (*tok)->next;
+  }
+}
+
 struct token *tok_consume(struct token *tok, const char *s) {
   if (tok_equals(tok, s)) {
     return tok->next;

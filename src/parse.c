@@ -70,16 +70,34 @@ struct node *num(struct token **rest, struct token *tok) {
   panic_tok(tok, "Expected a number, but received something else");
 }
 
-// mul = num ('*' num | '/' num)*
+// unary = ("-" | "+") unary
+//       | num
+struct node *unary(struct token **rest, struct token *tok) {
+  if (tok_equals(tok, "-")) {
+    struct node *node = new_node(ND_NEG, tok);
+    node->rhs = unary(&tok, tok->next);
+    *rest = tok;
+    return node;
+  }
+
+  if (tok_equals(tok, "+")) {
+    tok_skip(&tok, "+");
+    return unary(rest, tok);
+  }
+
+  return num(rest, tok);
+}
+
+// mul = unary ('*' unary | '/' unary)*
 struct node *mul(struct token **rest, struct token *tok) {
-  struct node *node = num(&tok, tok);
+  struct node *node = unary(&tok, tok);
   for (;;) { struct token *start = tok;
     if (tok_equals(tok, "*")) {
-      node = new_binary(ND_MUL, node, num(&tok, tok->next), start);
+      node = new_binary(ND_MUL, node, unary(&tok, tok->next), start);
       continue;
     }
     if (tok_equals(tok, "/")) {
-      node = new_binary(ND_DIV, node, num(&tok, tok->next), start);
+      node = new_binary(ND_DIV, node, unary(&tok, tok->next), start);
       continue;
     }
     *rest = tok;

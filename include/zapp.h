@@ -47,6 +47,7 @@ struct token {
 void tokenizer_init(struct tokenizer *tokenizer, char *buf);
 struct token *tokenize(struct tokenizer *tokenizer);
 int tok_equals(struct token *tok, const char *s);
+void tok_skip(struct token **tok, const char *s);
 struct token *tok_consume(struct token *tok, const char *s);
 
 /*
@@ -62,6 +63,7 @@ typedef enum {
   ND_LTE,    // <=
   ND_EQ,     // ==
   ND_NEQ,    // !=
+  ND_NEG,    // unary "-"
   ND_ASSIGN, // =
   ND_FOR,    // for loop
   ND_IF,     // if condition

@@ -9,6 +9,7 @@ static const char *nodekind_to_str[] = {
   "ND_LTE",
   "ND_EQ",
   "ND_NEQ",
+  "ND_NEG",
   "ND_ASSIGN",
   "ND_FOR",
   "ND_IF",
@@ -55,8 +56,12 @@ void _print_node_tree_recursive(struct node *node, int level) {
       break;
     default:
       printf("%*c%s\n", level * INDENT_LEN, ' ', nodekind_to_str[node->kind]);
-      _print_node_tree_recursive(node->lhs, level + 1);
-      _print_node_tree_recursive(node->rhs, level + 1);
+      if (node->lhs) {
+        _print_node_tree_recursive(node->lhs, level + 1);
+      }
+      if (node->rhs) {
+        _print_node_tree_recursive(node->rhs, level + 1);
+      }
   }
 }
 
@@ -66,7 +71,7 @@ void print_node_tree(struct node *node) {
 
 int main() {
   struct tokenizer tokenizer;
-  tokenizer_init(&tokenizer, "if 0 { a = 123 } else { a = 5 } print a");
+  tokenizer_init(&tokenizer, "a = +-+--+-2 print a");
   struct token *tok_list = tokenize(&tokenizer);
 #ifdef DEBUG
   for (struct token *tok = tok_list; tok->kind != TOKEN_EOF; tok = tok->next) {
