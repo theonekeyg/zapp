@@ -1,4 +1,4 @@
-#include "main.h"
+#include "zapp.h"
 #include "hash/hashtable.h"
 
 struct hashtable locals = {};

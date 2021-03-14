@@ -2,7 +2,7 @@ CC = /usr/bin/gcc
 CFLAGS = -g
 SRCS = $(wildcard src/*.c src/*/*.c)
 OBJS = $(addprefix obj/, $(notdir $(SRCS:.c=.o)))
-BIN = main
+BIN = zapp
 
 VPATH = src src/hash
 

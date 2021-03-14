@@ -1,4 +1,4 @@
-#include "main.h"
+#include "zapp.h"
 
 _Noreturn void panic(const char *fmt, ...) {
   va_list args;

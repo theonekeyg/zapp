@@ -1,4 +1,4 @@
-#include "main.h"
+#include "zapp.h"
 #include <ctype.h>
 
 static struct token *new_token(token_kind kind, char *start, int len, int nline, int nrow) {

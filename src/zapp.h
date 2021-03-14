@@ -1,5 +1,5 @@
-#ifndef _MAIN_H
-#define _MAIN_H
+#ifndef _ZAPP_H
+#define _ZAPP_H
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -117,4 +117,4 @@ _Noreturn void panic_tok(struct token *tok, const char *fmt, ...);
 double eval_node(struct node *node);
 void execute_node(struct node *node);
 
-#endif // _MAIN_H
+#endif // _ZAPP_H

@@ -1,4 +1,4 @@
-#include "main.h"
+#include "zapp.h"
 
 struct node *stmt(struct token **rest, struct token *tok);
 

@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-#include "main.h"
+#include "zapp.h"
 
 #define ASSERT_EQ(x, y) (assert((x) == (y)))
 #define ASSERT_NEQ(x, y) (assert((x) != (y)))
