@@ -3,4 +3,5 @@ obj/
 tests/*.exe
 tags
 *.o
+*.d
 *.so

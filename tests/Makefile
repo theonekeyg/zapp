@@ -1,6 +1,6 @@
 TESTS!= echo *.c
-OBJS = $(addprefix ../obj/, misc.o parse.o tokenize.o ast.o hashtable.o)
-INCLUDE = -I../src
+OBJS = $(addprefix ../src/, misc.o parse.o tokenize.o ast.o hash/hashtable.o)
+INCLUDE = -I../include
 
 .PHONY: $(TESTS)
 

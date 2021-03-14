@@ -1,24 +1,25 @@
 CC = /usr/bin/gcc
 CFLAGS = -g
+INCLUDE = -I./include
 SRCS = $(wildcard src/*.c src/*/*.c)
-OBJS = $(addprefix obj/, $(notdir $(SRCS:.c=.o)))
+OBJS = $(SRCS:.c=.o)
+DEPS = $(SRCS:.c=.d)
 BIN = zapp
 
 VPATH = src src/hash
 
 all: $(BIN)
 
--include obj/*.d
+-include $(DEPS)
 
 $(BIN): $(OBJS)
 	$(CC) -o $@ $^ $(CFLAGS)
 
-obj/%.o: %.c
-	@mkdir -p obj
-	$(CC) -c -o $@ $< -MMD $(CFLAGS)
+%.o: %.c
+	$(CC) -c -o $@ $< -MMD $(CFLAGS) $(INCLUDE)
 
 clean:
-	rm -rf obj $(BIN)
+	rm -rf $(BIN) $(OBJS) $(DEPS)
 
 test: $(OBJS)
 	cd tests && make

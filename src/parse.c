@@ -175,15 +175,6 @@ struct node *braces_body(struct token **rest, struct token *tok) {
     cur_node = &(*cur_node)->next;
   }
 
-  /*
-  node->body = calloc(1, sizeof(*node->body));
-  struct node *cur_node = node->body;
-  while (!(tok_equals(tok, "}") || tok->kind == TOKEN_EOF)) {
-    cur_node->next = stmt(&tok, tok);
-    cur_node = cur_node->next;
-  }
-  */
-
   if (tok->kind == TOKEN_EOF) {
     panic_tok(start, "Unclosed braces body");
   }
