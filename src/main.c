@@ -71,7 +71,7 @@ void print_node_tree(struct node *node) {
 
 int main() {
   struct tokenizer tokenizer;
-  tokenizer_init(&tokenizer, "a = +-+--+-2 print a");
+  tokenizer_init(&tokenizer, "for i in 0..5 { print i }");
   struct token *tok_list = tokenize(&tokenizer);
 #ifdef DEBUG
   for (struct token *tok = tok_list; tok->kind != TOKEN_EOF; tok = tok->next) {
@@ -82,11 +82,7 @@ int main() {
   }
 #endif // DEBUG
   struct node *program = parse(tok_list);
-  for (; program; program = program->next) {
-#ifdef DEBUG
-    print_node_tree(program);
-#endif // DEBUG
-    execute_node(program);
-  }
+  print_node_tree(program);
+  execute_node(program);
   return 0;
 }

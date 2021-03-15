@@ -247,12 +247,12 @@ struct node *stmt(struct token **rest, struct token *tok) {
 }
 
 struct node *parse(struct token *tokens) {
-  struct node head = {};
-  struct node *cur_node = &head;
+  struct node *head = new_node(ND_BLOCK, tokens);;
+  struct node **cur_node = &head->body;
   while (tokens->kind != TOKEN_EOF) {
     struct node *node = stmt(&tokens, tokens);
-    cur_node->next = node;
-    cur_node = cur_node->next;
+    (*cur_node) = node;
+    cur_node = &(*cur_node)->next;
   }
-  return head.next;
+  return head;
 }

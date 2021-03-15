@@ -88,12 +88,15 @@ void execute_node(struct node *node) {
         execute_node(node->init);
       }
       while (eval_node(node->cond) != 0) {
-        for (struct node *body = node->body->body; body; body = body->next) {
-          execute_node(body);
-        }
+        execute_node(node->body);
         if (node->inc) {
           execute_node(node->inc);
         }
+      }
+      break;
+    case ND_BLOCK:
+      for (struct node *tmp = node->body; tmp; tmp = tmp->next) {
+        execute_node(tmp);
       }
       break;
     default:
