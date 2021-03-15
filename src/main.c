@@ -81,8 +81,10 @@ int main() {
     printf(" at [%d;%d]\n", tok->nline, tok->nrow);
   }
 #endif // DEBUG
+
   struct node *program = parse(tok_list);
   print_node_tree(program);
   execute_node(program);
+  c_codegen(program, stdout);
   return 0;
 }

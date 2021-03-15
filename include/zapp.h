@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <stdarg.h>
+#include <stdbool.h>
 
 #undef DEBUG
 #define ENABLE_DEBUG 1
@@ -118,5 +119,11 @@ _Noreturn void panic_tok(struct token *tok, const char *fmt, ...);
 
 double eval_node(struct node *node);
 void execute_node(struct node *node);
+
+/*
+ * c_codegen
+ */
+
+void c_codegen(struct node *prog, FILE *fp);
 
 #endif // _ZAPP_H
