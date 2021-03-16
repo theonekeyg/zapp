@@ -108,10 +108,14 @@ static void c_generate_node(struct node *node) {
       c_generate_node(node->body);
       break;
     case ND_IF:
-      println("if (");
+      println("\n%*cif (", level * INDENT_SIZE, ' ');
       c_generate_node(node->cond);
       println(") ");
-      c_generate_node(node->body);
+      c_generate_node(node->then);
+      if (node->els) {
+        println(" else ");
+        c_generate_node(node->els);
+      }
       break;
     case ND_PRINT:
       println("\n%*cprintf(\"%%lf\\n\", ", level * INDENT_SIZE, ' ');
