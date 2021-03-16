@@ -124,6 +124,7 @@ _Noreturn void panic_tok(struct token *tok, const char *fmt, ...);
 
 double eval_node(struct node *node);
 void execute_node(struct node *node);
+void print_node_tree(struct node *node);
 
 /*
  * c_codegen
