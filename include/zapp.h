@@ -6,15 +6,20 @@
 #include <string.h>
 #include <stdarg.h>
 #include <stdbool.h>
+#include <errno.h>
 
 #undef DEBUG
-#define ENABLE_DEBUG 1
+#define ENABLE_DEBUG 0
 
 #if(ENABLE_DEBUG == 1)
 #define DEBUG
 #endif // if(ENABLE_DEBUG == 1)
 
 #define IS_CHAR(c) (((unsigned int)c | (1 << 5)) - 'a' <= 'z' - 'a')
+
+#define ARG_TBUF_FILLED 0x1
+#define ARG_COMPILE 0x2
+#define ARG_PRINT_TREE 0x4
 
 /*
  * tokenize
