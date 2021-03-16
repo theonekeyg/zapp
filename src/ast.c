@@ -46,16 +46,6 @@ double _eval_node(struct node *node) {
         panic_tok(node->tok, "Undefined variable");
       }
       break;
-    case ND_ASSIGN: {
-      double tmp = _eval_node(node->rhs);
-      htable_push(
-          &locals, node->lhs->var.name,
-          strlen(node->lhs->var.name),
-          (void *)*(uint64_t *)&tmp
-      );
-      rv = tmp;
-      break;
-    }
   }
   return rv;
 }
@@ -96,6 +86,15 @@ void execute_node(struct node *node) {
         }
       }
       break;
+    case ND_ASSIGN: {
+      double tmp = _eval_node(node->rhs);
+      htable_push(
+          &locals, node->lhs->var.name,
+          strlen(node->lhs->var.name),
+          (void *)*(uint64_t *)&tmp
+      );
+      break;
+    }
     case ND_BLOCK:
       for (struct node *tmp = node->body; tmp; tmp = tmp->next) {
         execute_node(tmp);
