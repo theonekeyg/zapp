@@ -1,6 +1,6 @@
 #include "test.h"
 
-void add_mul_precedence() {
+void test_add_mul_precedence() {
   struct tokenizer tokenizer;
   tokenizer_init(&tokenizer, "2 + 2 * 2");
   struct token *tok = tokenize(&tokenizer);
@@ -8,7 +8,7 @@ void add_mul_precedence() {
   ASSERT_EQ(6, eval_node(prog->body));
 }
 
-void add_cmp_precedence() {
+void test_add_cmp_precedence() {
   struct tokenizer tokenizer;
   tokenizer_init(&tokenizer, "2 < 1 + 2");
   struct token *tok = tokenize(&tokenizer);
@@ -16,7 +16,7 @@ void add_cmp_precedence() {
   ASSERT_EQ(1, eval_node(prog->body));
 }
 
-void div_cmp_precedence() {
+void test_div_cmp_precedence() {
   struct tokenizer tokenizer;
   tokenizer_init(&tokenizer, "5 > 10 / 3");
   struct token *tok = tokenize(&tokenizer);
@@ -24,7 +24,7 @@ void div_cmp_precedence() {
   ASSERT_EQ(1, eval_node(prog->body));
 }
 
-void paren_precedence() {
+void test_paren_precedence() {
   struct tokenizer tokenizer;
   tokenizer_init(&tokenizer, "2 / (3 - 1)");
   struct token *tok = tokenize(&tokenizer);
@@ -32,10 +32,19 @@ void paren_precedence() {
   ASSERT_EQ(1, eval_node(prog->body));
 }
 
+void test_add_mul_recursive() {
+  struct tokenizer tokenizer;
+  tokenizer_init(&tokenizer, "2 * (2 + 2) * 2");
+  struct token *tok = tokenize(&tokenizer);
+  struct node *prog = parse(tok);
+  ASSERT_EQ(16, eval_node(prog->body));
+}
+
 int main() {
-  add_mul_precedence();
-  add_cmp_precedence();
-  div_cmp_precedence();
-  paren_precedence();
+  test_add_mul_precedence();
+  test_add_cmp_precedence();
+  test_div_cmp_precedence();
+  test_paren_precedence();
+  test_add_mul_recursive();
   return 0;
 }
