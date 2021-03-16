@@ -58,6 +58,9 @@ double eval_node(struct node *node) {
 }
 
 void execute_node(struct node *node) {
+  if (!locals.buckets) {
+    htable_init(&locals, NULL);
+  }
   switch (node->kind) {
     case ND_IF:
       if (eval_node(node->cond)) {
