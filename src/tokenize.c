@@ -19,7 +19,7 @@ void tokenizer_init(struct tokenizer *tokenizer, char *buf) {
 
 static int punct_lookup(char *s) {
   static char *kw[] = {
-    "<=", ">=", "!=", "==", "..", "+", "-", "/", "*", "<", ">", "(", ")", "{", "}", "="
+    "<=", ">=", "!=", "==", "..", "+", "-", "/", "*", "<", ">", "(", ")", "{", "}", "=", "."
   };
   for (int i = 0; i < sizeof(kw)/sizeof(*kw); ++i) {
     if (!strncmp(kw[i], s, strlen(kw[i]))) {
@@ -27,6 +27,12 @@ static int punct_lookup(char *s) {
     }
   }
   return 0;
+}
+
+static struct type *new_type(type_kind kind) {
+  struct type *type = malloc(sizeof(*type));
+  type->kind = kind;
+  return type;
 }
 
 struct token *tokenize(struct tokenizer *tokenizer) {
@@ -48,24 +54,31 @@ struct token *tokenize(struct tokenizer *tokenizer) {
 
     char *start = tokenizer->cur;
 
-    // [1-9][0-9]*(.[0-9])*
+    // [1-9][0-9]*(.[0-9]*|.\s)?
     if (*tokenizer->cur >= '0' && *tokenizer->cur <= '9') {
       ++tokenizer->cur;
       ++tokenizer->nrow;
+
+      struct type *type = new_type(TY_INT);
+
       while (*tokenizer->cur >= '0' && *tokenizer->cur <= '9') {
         ++tokenizer->cur;
         ++tokenizer->nrow;
       }
-      /* @@@ remove floating point numbers for now
-      if (*tokenizer->cur == '.') {
+      if (*tokenizer->cur == '.' && (IS_SPACE(*(tokenizer->cur+1)) ||
+           (*(tokenizer->cur+1) >= '0' && *(tokenizer->cur+1) <= '9'))
+         ) {
+        ++tokenizer->cur;
+        ++tokenizer->nrow;
+        type->kind = TY_FLOAT;
         while (*tokenizer->cur >= '0' && *tokenizer->cur <= '9') {
           ++tokenizer->cur;
           ++tokenizer->nrow;
         }
       }
-      */
       struct token *tok = new_token(TOKEN_NUM, start, tokenizer->cur - start,
                                     tokenizer->nline, tokenizer->nrow);
+      tok->type = type;
       cur_token->next = tok;
       cur_token = cur_token->next;
       continue;

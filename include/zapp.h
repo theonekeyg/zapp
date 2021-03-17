@@ -16,6 +16,7 @@
 #endif // if(ENABLE_DEBUG == 1)
 
 #define IS_CHAR(c) (((unsigned int)c | (1 << 5)) - 'a' <= 'z' - 'a')
+#define IS_SPACE(c) (c == ' ' || c == '\t' || c == '\n')
 
 #define ARG_TBUF_FILLED 0x1
 #define ARG_COMPILE 0x2
@@ -26,7 +27,17 @@
  */
 
 typedef enum {
+  TY_INT,
+  TY_FLOAT
+} type_kind;
+
+struct type {
+  type_kind kind;
+};
+
+typedef enum {
   TOKEN_NUM,
+  TOKEN_FNUM,
   TOKEN_PUNCT,
   TOKEN_IDENT,
   TOKEN_EOF
@@ -44,6 +55,7 @@ struct tokenizer {
 struct token {
   struct token *next;
   token_kind kind;
+  struct type *type;
   char *start;
   int len;
   int nline;
@@ -81,6 +93,17 @@ typedef enum {
   ND_VAR     // variable
 } node_kind;
 
+union actual_value {
+  int num;        // integer value if `kind` is ND_NUM
+  double fnum;    // integer value if `kind` is ND_NUM
+  char *str;
+};
+
+struct zapp_value {
+  struct type *type;
+  union actual_value val;
+};
+
 struct var {
   char *name;
 };
@@ -91,7 +114,8 @@ struct node {
   struct node *lhs;
   struct node *rhs;
   struct token *tok;
-  int num;        // integer value if `kind` is ND_NUM
+  struct type *type;
+  union actual_value val;
   struct var var; // used if `kind` is ND_VAR
 
   // These three are used for conditional jumps

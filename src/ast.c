@@ -33,7 +33,11 @@ double _eval_node(struct node *node) {
       rv = _eval_node(node->lhs) != _eval_node(node->rhs);
       break;
     case ND_NUM:
-      rv = node->num;
+      if (node->type->kind == TY_INT) {
+        rv = node->val.num;
+      } else {
+        rv = node->val.fnum;
+      }
       break;
     case ND_NEG:
       rv = -_eval_node(node->rhs);
@@ -76,7 +80,12 @@ void execute_node(struct node *node) {
       }
       break;
     case ND_PRINT:
-      printf("%lf\n", eval_node(node->rhs));
+      if (node->rhs->type->kind == TY_INT) {
+        printf("%d\n", (int)eval_node(node->rhs));
+      }
+      else if (node->rhs->type->kind == TY_FLOAT) {
+        printf("%lf\n", eval_node(node->rhs));
+      }
       break;
     case ND_FOR:
       if (node->init) {
@@ -132,7 +141,7 @@ static void _print_node_tree_recursive(struct node *node, int level) {
   switch (node->kind) {
     case ND_NUM:
       printf("%*c%s : %d\n", level * NODE_INDENT_LEN, ' ', nodekind_to_str[node->kind],
-             node->num);
+             node->val.num);
       break;
     case ND_VAR:
       printf("%*c%s : %s\n", level * NODE_INDENT_LEN, ' ', nodekind_to_str[node->kind],

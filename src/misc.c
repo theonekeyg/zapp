@@ -8,6 +8,7 @@ _Noreturn void panic(const char *fmt, ...) {
   exit(1);
 }
 
+__attribute__((format(printf, 2, 3)))
 _Noreturn void panic_tok(struct token *tok, const char *fmt, ...) {
   va_list ap;
   char err_msg[500];

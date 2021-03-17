@@ -76,7 +76,11 @@ static void c_generate_node(struct node *node) {
       }
       if (!htable_contains(&vars, node->lhs->tok->start, node->lhs->tok->len)) {
         htable_push(&vars, node->lhs->tok->start, node->lhs->tok->len, NULL);
-        println("double ");
+        if (node->lhs->type->kind == TY_INT) {
+          println("int ");
+        } else if (node->lhs->type->kind == TY_FLOAT) {
+          println("double ");
+        }
       }
 
       c_generate_node(node->lhs);
@@ -117,11 +121,16 @@ static void c_generate_node(struct node *node) {
         c_generate_node(node->els);
       }
       break;
-    case ND_PRINT:
-      println("\n%*cprintf(\"%%lf\\n\", ", level * INDENT_SIZE, ' ');
-      c_generate_node(node->rhs);
-      println(");");
-      break;
+    case ND_PRINT: {
+        char *spec = "%d";
+        if (node->rhs->type->kind == TY_FLOAT) {
+          spec = "%lf";
+        }
+        println("\n%*cprintf(\"%s\\n\", ", level * INDENT_SIZE, ' ', spec);
+        c_generate_node(node->rhs);
+        println(");");
+        break;
+      }
     case ND_BLOCK:
       ++level;
       println("{");
@@ -136,7 +145,11 @@ static void c_generate_node(struct node *node) {
       }
       break;
     case ND_NUM:
-      println("%d", node->num);
+      if (node->type->kind == TY_INT) {
+        println("%d", node->val.num);
+      } else if (node->type->kind == TY_FLOAT) {
+        println("%lf", node->val.fnum);
+      }
       break;
     case ND_VAR:
       println("%.*s", node->tok->len, node->tok->start);

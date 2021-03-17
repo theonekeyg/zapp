@@ -1,32 +1,69 @@
 #include "zapp.h"
+#include "hash/hashtable.h"
 
 struct node *stmt(struct token **rest, struct token *tok);
 
-static int custom_atoi(char *a) {
-  int rv = 0;
+static struct hashtable vars = {};
+
+static struct type type_int = { .kind = TY_INT };
+static struct type type_float = { .kind = TY_FLOAT };
+
+static double custom_atoi(char *a) {
+  double rv = 0;
   while (*a >= '0' && *a <= '9') {
     rv = rv * 10 + (*a++ - '0');
+  }
+  if (*a == '.') {
+    ++a;
+    float weight = 1.f;
+    while (*a >= '0' && *a <= '9') {
+      weight /= 10;
+      rv += weight * (*a++ - '0');
+    }
   }
   return rv;
 }
 
-struct node *new_node(node_kind kind, struct token *tok) {
+static struct type *pick_type(struct type *ty1, struct type *ty2) {
+  if (ty1->kind == TY_INT && ty2->kind == TY_INT) {
+    return ty1;
+  }
+
+  if (ty1->kind == TY_FLOAT) {
+    return ty1;
+  }
+
+  if (ty2->kind == TY_FLOAT) {
+    return ty2;
+  }
+
+  return ty1;
+}
+
+static struct node *new_node(node_kind kind, struct token *tok) {
   struct node *node = calloc(1, sizeof(*node));
   node->kind = kind;
   node->tok = tok;
   return node;
 }
 
-struct node *new_binary(node_kind kind, struct node *lhs, struct node *rhs, struct token *tok) {
+static struct node *new_binary(node_kind kind, struct node *lhs, struct node *rhs,
+                               struct token *tok) {
   struct node *node = new_node(kind, tok);
   node->lhs = lhs;
   node->rhs = rhs;
+  node->type = pick_type(lhs->type, rhs->type);
   return node;
 }
 
-struct node *new_num_literal(double num, struct token *tok) {
+static struct node *new_num_literal(double num, struct token *tok) {
   struct node *node = new_node(ND_NUM, tok);
-  node->num = num;
+  node->val.num = num;
+  if ((int)num != num) {
+    node->type = &type_float;
+  } else {
+    node->type = &type_int;
+  }
   return node;
 }
 
@@ -35,6 +72,10 @@ struct node *ident(struct token **rest, struct token *tok) {
   if (tok->kind == TOKEN_IDENT) {
     struct node *node = new_node(ND_VAR, tok);
     node->var.name = strndup(tok->start, tok->len);
+    if (htable_contains(&vars, tok->start, tok->len)) {
+      struct node *var_value = htable_get(&vars, tok->start, tok->len);
+      node->type = var_value->type;
+    }
     *rest = tok->next;
     return node;
   }
@@ -57,7 +98,12 @@ struct node *num(struct token **rest, struct token *tok) {
 
   if (tok->kind == TOKEN_NUM) {
     struct node *node = new_node(ND_NUM, tok);
-    node->num = custom_atoi(tok->start);
+    if (tok->type->kind == TY_FLOAT) {
+      node->val.fnum = custom_atoi(tok->start);
+    } else {
+      node->val.num = custom_atoi(tok->start);
+    }
+    node->type = tok->type;
     *rest = tok->next;
     return node;
   }
@@ -76,6 +122,7 @@ struct node *unary(struct token **rest, struct token *tok) {
   if (tok_equals(tok, "-")) {
     struct node *node = new_node(ND_NEG, tok);
     node->rhs = unary(&tok, tok->next);
+    node->type = node->rhs->type;
     *rest = tok;
     return node;
   }
@@ -91,7 +138,8 @@ struct node *unary(struct token **rest, struct token *tok) {
 // mul = unary ('*' unary | '/' unary)*
 struct node *mul(struct token **rest, struct token *tok) {
   struct node *node = unary(&tok, tok);
-  for (;;) { struct token *start = tok;
+  for (;;) {
+    struct token *start = tok;
     if (tok_equals(tok, "*")) {
       node = new_binary(ND_MUL, node, unary(&tok, tok->next), start);
       continue;
@@ -173,7 +221,10 @@ struct node *expr(struct token **rest, struct token *tok) {
     struct token *start = tok;
     struct node *var = ident(&tok, tok);
     tok = tok->next;
-    node = new_binary(ND_ASSIGN, var, expr(&tok, tok), start);
+    struct node *rhs = expr(&tok, tok);
+    var->type = rhs->type;
+    htable_push(&vars, var->tok->start, var->tok->len, var);
+    node = new_binary(ND_ASSIGN, var, rhs, start);
   } else {
     node = equation(&tok, tok);
   }
@@ -233,6 +284,9 @@ struct node *stmt(struct token **rest, struct token *tok) {
     tok = tok_consume(tok, "..");
     struct node *end = expr(&tok, tok);
 
+    var->type = start->type;
+    htable_push(&vars, var->tok->start, var->tok->len, var);
+
     node->init = new_binary(ND_ASSIGN, var, start, var->tok);
     node->cond = new_binary(ND_LT, var, end, tok);
     node->inc = new_binary(ND_ASSIGN, var,
@@ -249,6 +303,9 @@ struct node *stmt(struct token **rest, struct token *tok) {
 struct node *parse(struct token *tokens) {
   struct node *head = new_node(ND_BLOCK, tokens);;
   struct node **cur_node = &head->body;
+  if (!vars.buckets) {
+    htable_init(&vars, NULL);
+  }
   while (tokens->kind != TOKEN_EOF) {
     struct node *node = stmt(&tokens, tokens);
     (*cur_node) = node;
