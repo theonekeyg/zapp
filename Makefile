@@ -1,5 +1,6 @@
 CC = /usr/bin/gcc
-CFLAGS = -g
+CFLAGS ?= -g
+CFLAGS += -fPIE
 INCLUDE = -I./include
 SRCS = $(wildcard src/*.c src/*/*.c)
 OBJS = $(SRCS:.c=.o)
