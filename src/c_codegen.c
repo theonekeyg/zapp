@@ -74,8 +74,8 @@ static void c_generate_node(struct node *node) {
       if (with_newline) {
         println("\n%*c", level * INDENT_SIZE, ' ');
       }
-      if (!htable_contains(&vars, node->lhs->tok->start, node->lhs->tok->len)) {
-        htable_push(&vars, node->lhs->tok->start, node->lhs->tok->len, NULL);
+      if (!htable_contains(&vars, node->lhs->var.name, node->lhs->var.len)) {
+        htable_push(&vars, node->lhs->var.name, node->lhs->var.len, NULL);
         if (node->lhs->type->kind == TY_INT) {
           println("int ");
         } else if (node->lhs->type->kind == TY_FLOAT) {
@@ -152,7 +152,7 @@ static void c_generate_node(struct node *node) {
       }
       break;
     case ND_VAR:
-      println("%.*s", node->tok->len, node->tok->start);
+      println("%.*s", node->var.len, node->var.name);
       break;
   }
 }

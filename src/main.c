@@ -63,7 +63,7 @@ static void parse_arg(int *argc, char **argv, struct tokenizer *tokenizer) {
       exit(1);
     }
     // If buffer already filled, just skip -i argument
-    if (tokenizer->buf) {
+    if (arg_flags & ARG_TBUF_FILLED) {
       shift_arg(argc, argv);
       shift_arg(argc, argv);
     } else {
@@ -83,12 +83,12 @@ static void parse_arg(int *argc, char **argv, struct tokenizer *tokenizer) {
     usage();
   } else {
     // If buffer already filled, do nothing
-    if (tokenizer->buf) {
+    if (arg_flags & ARG_TBUF_FILLED) {
       shift_arg(argc, argv);
     } else {
       char *buf;
       if ((buf = read_file(*argv))) {
-        tokenizer_init(tokenizer, read_file(*argv));
+        tokenizer_init(tokenizer, buf);
         arg_flags |= ARG_TBUF_FILLED;
         shift_arg(argc, argv);
       } else {
@@ -113,18 +113,8 @@ int main(int argc, char **argv) {
     fprintf(stderr, "Error: no source input is provided\n");
     usage();
   }
-  struct token *tok_list = tokenize(&tokenizer);
 
-#ifdef DEBUG
-  for (struct token *tok = tok_list; tok->kind != TOKEN_EOF; tok = tok->next) {
-    for (int i = 0; i < tok->len; ++i) {
-      putchar(tok->start[i]);
-    }
-    printf(" at [%d;%d]\n", tok->nline, tok->nrow);
-  }
-#endif // DEBUG
-
-  struct node *program = parse(tok_list);
+  struct node *program = parse(&tokenizer);
 
   if (arg_flags & ARG_PRINT_TREE) {
     print_node_tree(program);

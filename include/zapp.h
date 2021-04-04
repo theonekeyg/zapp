@@ -27,6 +27,7 @@
 #define IS_SPACE(c) (c == ' ' || c == '\t' || c == '\n')
 #define INCR_COL(tokenizer, n) (tokenizer->ncol += n)
 #define INCR_LINE(tokenizer) (tokenizer->ncol = 0, tokenizer->nline++)
+#define MAX_LOOKAHEAD 3
 
 typedef enum {
   TY_INT,
@@ -45,15 +46,7 @@ typedef enum {
   TOKEN_EOF
 } token_kind;
 
-struct tokenizer {
-  char *buf;
-  char *cur;
-  int nline;
-  int ncol;
-};
-
 struct token {
-  struct token *next;
   token_kind kind;
   struct type *type;
   char *start;
@@ -62,11 +55,22 @@ struct token {
   int ncol;
 };
 
+struct tokenizer {
+  char *buf;
+  char *cur;
+  struct token lookahead[MAX_LOOKAHEAD];
+  int avail_tokens;
+  int nline;
+  int ncol;
+};
+
 void tokenizer_init(struct tokenizer *tokenizer, char *buf);
-struct token *tokenize(struct tokenizer *tokenizer);
+struct token *tok_peek(struct tokenizer *tokenizer);
+struct token *tok_npeek(struct tokenizer *tokenizer, int n);
 int tok_equals(struct token *tok, const char *s);
-void tok_skip(struct token **tok, const char *s);
-struct token *tok_consume(struct token *tok, const char *s);
+void tok_skip(struct tokenizer *tokenizer, const char *s);
+int tok_consume(struct tokenizer *tokenizer, const char *s);
+void tok_consume_lookahead(struct tokenizer *tokenizer);
 
 /*
  * parse
@@ -106,6 +110,7 @@ struct zapp_value {
 
 struct var {
   char *name;
+  int len;
 };
 
 struct node {
@@ -113,7 +118,6 @@ struct node {
   struct node *next;
   struct node *lhs;
   struct node *rhs;
-  struct token *tok;
   struct type *type;
   union actual_value val;
   struct var var; // used if `kind` is ND_VAR
@@ -131,8 +135,8 @@ struct node {
   struct node *body;
 };
 
-struct node *expr(struct token **rest, struct token *tok);
-struct node *parse(struct token *tokens);
+struct node *expr(struct tokenizer *tokenizer);
+struct node *parse(struct tokenizer *tokenizer);
 
 /*
  * misc
@@ -140,7 +144,7 @@ struct node *parse(struct token *tokens);
 
 _Noreturn void panic(const char *fmt, ...);
 
-_Noreturn void panic_tok(struct token *tok, const char *fmt, ...);
+_Noreturn void panic_tok(struct tokenizer *tokenizer, const char *fmt, ...);
 
 /*
  * ast

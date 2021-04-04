@@ -47,7 +47,8 @@ double _eval_node(struct node *node) {
         void *value = htable_get(&locals, node->var.name, strlen(node->var.name));
         rv = *(double *)&value;
       } else {
-        panic_tok(node->tok, "Undefined variable");
+        // TODO: Rework panicing on undefined var
+        /* panic_tok(node->tok, "Undefined variable"); */
       }
       break;
   }
