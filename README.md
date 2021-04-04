@@ -27,3 +27,6 @@ if (var != 6) {
   print 0
 }
 ```
+
+### Credits:
+A bunch of design decisions were taken from [this project](https://github.com/rui314/chibicc).
