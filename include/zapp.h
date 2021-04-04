@@ -15,9 +15,6 @@
 #define DEBUG
 #endif // if(ENABLE_DEBUG == 1)
 
-#define IS_CHAR(c) (((unsigned int)c | (1 << 5)) - 'a' <= 'z' - 'a')
-#define IS_SPACE(c) (c == ' ' || c == '\t' || c == '\n')
-
 #define ARG_TBUF_FILLED 0x1
 #define ARG_COMPILE 0x2
 #define ARG_PRINT_TREE 0x4
@@ -25,6 +22,11 @@
 /*
  * tokenize
  */
+
+#define IS_CHAR(c) (((unsigned int)c | (1 << 5)) - 'a' <= 'z' - 'a')
+#define IS_SPACE(c) (c == ' ' || c == '\t' || c == '\n')
+#define INCR_COL(tokenizer, n) (tokenizer->ncol += n)
+#define INCR_LINE(tokenizer) (tokenizer->ncol = 0, tokenizer->nline++)
 
 typedef enum {
   TY_INT,
@@ -46,10 +48,8 @@ typedef enum {
 struct tokenizer {
   char *buf;
   char *cur;
-  char *tok_start;
-  char *tok_end;
   int nline;
-  int nrow;
+  int ncol;
 };
 
 struct token {
@@ -59,7 +59,7 @@ struct token {
   char *start;
   int len;
   int nline;
-  int nrow;
+  int ncol;
 };
 
 void tokenizer_init(struct tokenizer *tokenizer, char *buf);

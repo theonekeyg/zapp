@@ -15,5 +15,5 @@ _Noreturn void panic_tok(struct token *tok, const char *fmt, ...) {
   va_start(ap, fmt);
   vsnprintf(err_msg, 500, fmt, ap);
   va_end(ap);
-  panic("Error: %s at [%d;%d]\n", err_msg, tok->nline, tok->nrow);
+  panic("Error: %s at [%d;%d]\n", err_msg, tok->nline, tok->ncol);
 }

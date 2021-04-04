@@ -8,7 +8,7 @@ static struct hashtable vars = {};
 static struct type type_int = { .kind = TY_INT };
 static struct type type_float = { .kind = TY_FLOAT };
 
-static double custom_atoi(char *a) {
+static double custom_atof(char *a) {
   double rv = 0;
   while (*a >= '0' && *a <= '9') {
     rv = rv * 10 + (*a++ - '0');
@@ -99,9 +99,9 @@ struct node *num(struct token **rest, struct token *tok) {
   if (tok->kind == TOKEN_NUM) {
     struct node *node = new_node(ND_NUM, tok);
     if (tok->type->kind == TY_FLOAT) {
-      node->val.fnum = custom_atoi(tok->start);
+      node->val.fnum = custom_atof(tok->start);
     } else {
-      node->val.num = custom_atoi(tok->start);
+      node->val.num = custom_atof(tok->start);
     }
     node->type = tok->type;
     *rest = tok->next;
